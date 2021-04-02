@@ -1,3 +1,3 @@
 # HOMEWORK 0
 
-[5 forecasting examples](https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework0/HW0.html)
+[5 forecasting examples](https://bu-ie-360.github.io/spring21-yunusemretoprak/HW0.html)
