@@ -1,0 +1,41 @@
+---
+title: "Interesting Forecasting Applications with R"
+author: "YUNUS EMRE TOPRAK - IE360 - Spring 2021"
+date: "02 04 2021"
+output: html_document
+---
+```{r,echo=FALSE,results="hide"}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+```{r,echo=FALSE,eval=FALSE}
+rmarkdown::render("/home/baydogan/Courses/IE360/Guidelines/example_homework_0.Rmd",output_format="pdf_document")
+rmarkdown::render("/home/baydogan/Courses/IE360/Guidelines/example_homework_0.Rmd",output_format="html_document")
+```
+
+1. [Time series forecasting using ARIMA models](https://blogs.oracle.com/datascience/introduction-to-forecasting-with-arima-in-r)
+
+    This example is important because it introduces the forecasting methodology using ARIMA models in R. The steps are
+    
+    * Examine the data
+    * Decompose the data
+    * Stationary
+    * Autocorrelations and choosing model order
+    * Fit an ARIMA model
+    * Evaluate and iterate
+
+2. [Naive forecasting methods](https://campus.datacamp.com/courses/forecasting-in-r/benchmark-methods-and-forecast-accuracy?ex=2)
+
+    The very simplest forecasting method is to use the most recent observation; this is called a naive forecast and can be implemented in a namesake function. This is the best that can be done for many time series including most stock price data, and even if it is not a good forecasting method, it provides a useful benchmark for other forecasting methods.
+    
+3. [Exponential Smoothing](https://www.geeksforgeeks.org/exponential-smoothing-in-r-programming/)
+
+    The Exponential Smoothing is a technique for smoothing data of time series using an exponential window function. It is a rule of the thumb method. Unlike simple moving average, over time the exponential functions assign exponentially decreasing weights.
+    
+4. [Holt's Trend Method](https://www.rdocumentation.org/packages/aTSA/versions/3.1.2/topics/Holt)
+
+    Performs Holt's two-parameter exponential smoothing for linear trend or damped trend.
+    
+5. [TBATS model](https://www.rdocumentation.org/packages/forecast/versions/8.14/topics/tbats)
+
+    Fits a TBATS model applied to 'y', as described in De Livera, Hyndman & Snyder (2011). Parallel processing is used by default to speed up the computations.
