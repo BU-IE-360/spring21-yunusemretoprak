@@ -1,0 +1,161 @@
+---
+title: "HW 1"
+author: "YUNUS EMRE TOPRAK"
+date: "14 04 2021"
+output: html_document
+---
+# Part 1
+
+```{r, message=FALSE,warning=FALSE}
+library(readxl)
+library(zoo)
+library(tidyverse)
+library(knitr)
+library(tinytex)
+library(openxlsx)
+library(gtrendsR)
+library(reshape2)
+library(ggplot2)
+```
+
+## USD Level Data
+### Getting Data
+
+Firstly, I got the data from Electronic Data Delivery System of TCMB to my computer. I used table function for reading the data.
+
+```{r}
+USDlvl <- read.xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\USDlevel.xlsx")
+
+USDlvl %>% glimpse()
+```
+
+### Preparing Data
+
+I made the data type more useful by using the transform function. 
+
+```{r}
+USDlvl<-transform(USDlvl,USD=as.numeric(USD),Date=as.yearmon(Date))
+
+USDlvl %>% glimpse()
+```
+
+
+### Plotting
+
+In this step, I visualized the USD level data via geomline function.
+
+```{r}
+ggplot(USDlvl, aes(Date,USD)) +
+  geom_line() +
+  geom_point(aes(colour = USD))
+```
+
+### Analysis
+  When we look at the USDlvl chart, we see a shot in dollar prices in general. There is a decrease from the beginning of 2017 to the middle of 2017.There is also a fluctuation between 2019 and 2020.However, as we said at the beginning, there is a big increase between 2015 and 2020, and this is approximately 4 TL.  
+
+## Central Bank Reserve
+
+### Getting Data
+
+```{r}
+rsv <- read.xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\CentralBankReserve.xlsx") 
+                      
+```
+### Preparing Data
+
+I made the data type more useful by using the transform function.
+
+```{r}
+rsv<-transform(rsv,Rsv=as.numeric(Rsv),Date=as.yearmon(Date))
+
+rsv %>% glimpse()
+```
+
+### Plotting
+
+
+```{r}
+ggplot(rsv, aes(Date,Rsv)) +
+  geom_line() +
+  geom_point(aes(colour = Rsv)) +
+  expand_limits(y = c(40000,120000))
+```
+
+
+### Analysis
+
+When we look at the plot we created in the previous step, there is a lot of fluctuation between 2016, 2017 and 2018. However, at the beginning of the year, it is seen that they are generally close to each other. It can be seen that reserves declined sharply towards the third quarter of 2018. Despite this, there is an increase again in early 2019. The years 2019 and early 2020 are still close to each other in average, but after the 1st quarter of 2020, there has been a big decrease in reserves.
+
+## Medical Products Prices Index
+
+### Getting Data
+
+```{r}
+MPP <-  read.xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\MedicalProducts.xlsx") 
+                      
+```
+### Preparing Data
+
+```{r}
+MPP <-transform(MPP,PriceIndex=as.numeric(PriceIndex),Date=as.yearmon(Date))
+
+MPP %>% glimpse()
+```
+
+### Plotting
+
+```{r}
+ggplot(MPP, aes(Date,PriceIndex)) +
+  geom_line() +
+  geom_point(aes(colour = PriceIndex)) +
+  expand_limits(y = c(100,220))
+```
+
+
+### Analysis
+
+When we look at the plot we have created above, it is seen that there is a normal increase from 2016 to 2019. However, these increases have increased significantly after 2019 and it is seen that this increase continues in 2020.
+
+
+## Comparative Analysis
+
+When we compare the graphs of USD level and central bank reserves, from 2016 to mid-2018, when the dollar was worth 3-4 TL, central bank reserves fluctuated between 100000 and 80000, but did not fall below 80000.However, with the dollar spiking after mid-2018, central bank reserves fell below 80000 and generally remained below this value.
+
+In addition, medical products prices indexes have generally increased. In addition to the general appreciation of the dollar compared to the Turkish lira, the prices of these products also increased. We see that these increases are greater in 2019.
+
+Finally, In general, when there was an increase in dollar prices, the reserves of the central bank decreased, while the medical product prices indexes increased.These changes have been more acute after 2018 than before 2018.
+
+# Part 2
+## Google Trends
+
+I choose the keyword that I research.
+
+```{r,message=FALSE,warning=FALSE}
+keywords=c("Dolar","TL","Euro")
+```
+
+I determine the time interval of my analysis.
+
+```{r,message=FALSE,warning=FALSE}
+time=("2015-04-17 2021-04-04")
+```
+
+I selected only interest over time 
+
+```{r,message=FALSE,warning=FALSE}
+trend = gtrends(keywords, geo="TR", time = time, onlyInterest = TRUE)
+trends=trend$interest_over_time
+```
+
+I plotted.
+
+```{r message=FALSE, warning=FALSE}
+plot<-ggplot(data=trends, aes(x=date, y=hits,group=keyword, col=keyword))+
+        geom_line()+xlab('Time')+ylab('Relative Interest')+ theme_bw()+
+        theme(legend.title = element_blank(),legend.position="bottom",legend.text=element_text(size=14))+ggtitle("Google Search Volume")
+plot
+```
+
+## Comments
+
+In this step, the third currency in turkey, we examined the data from google trends. The word turkey in the dollar and the euro, as seen in the graph according to TL words are more clicked. According to the information herein which do deal with people in Turkey, Turkey seems to follow in dollar terms.The reason for this may be that the prices of many products change with the change of dollar prices, and people earn from their jobs in dollars. Because of the euro may be due to fewer clicks turkey were followed in dollars more widely used.
