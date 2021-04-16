@@ -24,7 +24,10 @@ library(ggplot2)
 Firstly, I got the data from Electronic Data Delivery System of TCMB to my computer. I used table function for reading the data.
 
 ```{r}
-USDlvl <- read.xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\USDlevel.xlsx")
+USD=tempfile(fileext=".xlsx")
+download.file("https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework1/USDlevel.xlsx?raw=true",destfile=USD,mode='wb') 
+USDlvl = read.xlsx(USD) 
+file.remove(USD)
 
 USDlvl %>% glimpse()
 ```
@@ -58,7 +61,12 @@ ggplot(USDlvl, aes(Date,USD)) +
 ### Getting Data
 
 ```{r}
-rsv <- read.xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\CentralBankReserve.xlsx") 
+rs=tempfile(fileext=".xlsx")
+download.file("https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework1/CentralBankReserve.xlsx?raw=true",destfile=rs,mode='wb') 
+rsv = read.xlsx(rs) 
+file.remove(rs) 
+
+rsv %>% glimpse()
                       
 ```
 ### Preparing Data
@@ -91,7 +99,11 @@ When we look at the plot we created in the previous step, there is a lot of fluc
 ### Getting Data
 
 ```{r}
-MPP <-  read.xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\MedicalProducts.xlsx") 
+mp=tempfile(fileext=".xlsx")
+download.file("https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework1/MedicalProducts.xlsx?raw=true",destfile=mp,mode='wb') 
+MPP = read.xlsx(mp) 
+file.remove(mp)
+
                       
 ```
 ### Preparing Data

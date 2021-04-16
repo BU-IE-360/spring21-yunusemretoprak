@@ -398,9 +398,12 @@ library(ggplot2)</code></pre>
 <div id="getting-data" class="section level3">
 <h3>Getting Data</h3>
 <p>Firstly, I got the data from Electronic Data Delivery System of TCMB to my computer. I used table function for reading the data.</p>
-<pre class="r"><code>USDlvl &lt;- read.xlsx(&quot;C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\USDlevel.xlsx&quot;)
-
-USDlvl %&gt;% glimpse()</code></pre>
+<pre class="r"><code>USD=tempfile(fileext=&quot;.xlsx&quot;)
+download.file(&quot;https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework1/USDlevel.xlsx?raw=true&quot;,destfile=USD,mode=&#39;wb&#39;) 
+USDlvl = read.xlsx(USD) 
+file.remove(USD)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>USDlvl %&gt;% glimpse()</code></pre>
 <pre><code>## Rows: 55
 ## Columns: 2
 ## $ Date &lt;chr&gt; &quot;2015-10&quot;, &quot;2015-11&quot;, &quot;2015-12&quot;, &quot;2016-01&quot;, &quot;2016-02&quot;, &quot;2016-0...
@@ -434,7 +437,16 @@ USDlvl %&gt;% glimpse()</code></pre>
 <h2>Central Bank Reserve</h2>
 <div id="getting-data-1" class="section level3">
 <h3>Getting Data</h3>
-<pre class="r"><code>rsv &lt;- read.xlsx(&quot;C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\CentralBankReserve.xlsx&quot;) </code></pre>
+<pre class="r"><code>rs=tempfile(fileext=&quot;.xlsx&quot;)
+download.file(&quot;https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework1/CentralBankReserve.xlsx?raw=true&quot;,destfile=rs,mode=&#39;wb&#39;) 
+rsv = read.xlsx(rs) 
+file.remove(rs) </code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>rsv %&gt;% glimpse()</code></pre>
+<pre><code>## Rows: 55
+## Columns: 2
+## $ Date &lt;chr&gt; &quot;2015-10&quot;, &quot;2015-11&quot;, &quot;2015-12&quot;, &quot;2016-01&quot;, &quot;2016-02&quot;, &quot;2016-0...
+## $ Rsv  &lt;dbl&gt; 100121, 99707, 95703, 92856, 93693, 95016, 96193, 98397, 10189...</code></pre>
 </div>
 <div id="preparing-data-1" class="section level3">
 <h3>Preparing Data</h3>
@@ -464,7 +476,11 @@ rsv %&gt;% glimpse()</code></pre>
 <h2>Medical Products Prices Index</h2>
 <div id="getting-data-2" class="section level3">
 <h3>Getting Data</h3>
-<pre class="r"><code>MPP &lt;-  read.xlsx(&quot;C:\\Users\\Yunus Emre TOPRAK\\Desktop\\360\\MedicalProducts.xlsx&quot;) </code></pre>
+<pre class="r"><code>mp=tempfile(fileext=&quot;.xlsx&quot;)
+download.file(&quot;https://github.com/BU-IE-360/spring21-yunusemretoprak/blob/gh-pages/Homework1/MedicalProducts.xlsx?raw=true&quot;,destfile=mp,mode=&#39;wb&#39;) 
+MPP = read.xlsx(mp) 
+file.remove(mp)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="preparing-data-2" class="section level3">
 <h3>Preparing Data</h3>
