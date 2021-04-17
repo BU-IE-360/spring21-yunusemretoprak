@@ -6,7 +6,7 @@ output: html_document
 ---
 # Part 1
 
-```{r, message=FALSE,warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 library(readxl)
 library(zoo)
 library(tidyverse)
