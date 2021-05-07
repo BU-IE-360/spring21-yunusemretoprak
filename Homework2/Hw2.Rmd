@@ -1,0 +1,185 @@
+---
+title: "Time Series Regression for Predicting Macroeconomic Indicators"
+author: "YUNUS EMRE TOPRAK"
+date: "06 05 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In this project, we will develop a time series regression model to predict  macroeconomic indicator. We will use data on total home sales in Turkey and related topics to create this model. We will get these data from the [Data Delivery System of Central Bank of the Republic of Turkey Electronic site](https://evds2.tcmb.gov.tr/index.php?).
+
+The subject we will deal with in this project will be the total house sales in Turkey. We will use the data of houses sold in the past to predict homes that will be sold in the coming months.We will also try to make a more accurate estimate, taking into account the fluctuations of the dollar exchange rate that people create in the country's economy.In addition to these, we will create a forecast model by considering the economic expectation of the country and the state of the dollar in the next 12 months with two survey questions.
+
+```{r echo=FALSE, include=TRUE}
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(lubridate)
+library(data.table)
+library(ggcorrplot)
+library(GGally)
+library(corrplot)
+library(forecast)
+library(zoo)
+library(tidyverse)
+```
+
+```{r echo=FALSE, include=TRUE}
+data = read_xlsx("C:\\Users\\Yunus Emre TOPRAK\\Desktop\\Fall 20-21\\IE-360\\HW2\\Data_of_house.sales.xlsx")
+
+data = transform(data, Date=ymd(paste(Date,"01",sep="-")), Prob.buy.home=as.numeric(Prob.buy.home), Ec.sit.ex=as.numeric(Ec.sit.ex), Total.sales=as.numeric(Total.sales), USD=as.numeric(USD), Int.rate=as.numeric(Int.rate))
+
+data %>% glimpse()
+
+```
+# Analysis of House Sales Statistics
+
+In this step,for better understanding of the target variable, we will plot the data of house sales.
+
+```{r echo=FALSE, include=TRUE}
+ggplot(data, aes(x=Date, y=Total.sales)) +
+  geom_line(size = 1, colour = "darkblue") +
+  labs(title = "Total house sales in between 2014-2021", x = "Date", y = "Total Sales") +
+  theme(axis.text.x = element_text(size=9, hjust = 0.7 ), axis.title.y = element_text(size=10))
+
+```
+
+As seen in the graph, the fluctuation rate has increased gradually towards the last years. We will use the log function to create a better prediction model.
+
+```{r echo=FALSE, include=TRUE}
+data$log.sales=log(data$Total.sales)
+
+ggplot(data, aes(x=Date, y=log.sales)) +
+  geom_line(size = 1, colour = "darkblue") +
+  labs(title = "Logarithm of total house sales in between 2014-2021", x = "Date", y = "log(Total Sales)") +
+  theme(axis.text.x = element_text(angle = 45, size=9, hjust = 1))
+
+```
+
+Let's add and compare basic trend lines to see which graph will give better results.
+
+```{r echo = FALSE, include = TRUE, out.width='50%'}
+regres<-lm(Total.sales ~ Date, data = data)
+regcff=coefficients(regres)
+
+rgr = paste0("y = ", round(regcff[2],1), "*x ", round(regcff[1],1))
+
+plot(data$Date, data$Total.sales,xlab='Date',ylab='Total Sales', main='Total house sales in between 2014-2021',type="l")
+abline(regres, col="darkblue")
+regres1<-lm(log.sales ~ Date, data = data)
+regcff=coefficients(regres1)
+rgr = paste0("y = ", round(regcff[2],1), "*x ", round(regcff[1],1))
+
+plot(data$Date, data$log.sales,xlab='Date',ylab='Logarithm of total Sales', main='Logarithm of Total house sales in between 2014-2021', type="l")
+abline(regres1, col="darkblue")
+```
+
+When the graphs are examined, it is seen that the data in the logarithm model are closer to the trend line. Therefore, it is seen that using the logarithm model while creating the forecast model will give better results. However, it is not possible to say that it will definitely give better results.For these reasons, when we create a forecast model, we will use logarithm data. 
+
+
+# Analyses of Independent Variables
+
+In this step, we will compare home buying statistics in Turkey with other data affecting this statistics. It is known that the dollar exchange rate has an effect on people's purchasing power. These changes in people's purchasing power will affect their statistics such as buying and selling houses, so we can add dollar rates to the comparison. In addition, since changes in interest rates will affect these trading rates, we can add the country's interest rates to this analysis. Also, we will process the data of two questions from the questionnaires in this graph. these are "What is the general economic situation expectation of the country in the next 12 months?" and "What is the probability of buying a house in the next 12 months?"
+
+```{r echo = FALSE, include = TRUE}
+ggplot(data, aes(x=Date)) +
+  geom_line(aes(y=Total.sales/10000, color="Total Sales"), size=0.75)+
+  geom_line(aes(y=log.sales, color= "Logarithm of total sales"),size=0.75)+
+  geom_line(aes(y=USD, color = "USD"),size=0.75)+
+  geom_line(aes(y=Int.rate, color = "Interest Rate"),size=0.75)+
+  geom_line(aes(y=Prob.buy.home, color = "Prob. of buying home "),size=0.75)+
+  geom_line(aes(y=Ec.sit.ex/10, color = "General economic situation expectation"),size=0.75)+
+  labs(x="Date",y=" ", title="Independent Variables in between 2014-2020") +
+  theme_minimal()
+```
+
+The table shows the relationship between independent data. Since some values ​​are very different from each other, we have reduced them to similar values with various simple operations.
+
+
+```{r echo = FALSE, include = TRUE}
+
+cor=data[,4]
+cor = data.frame(cor)
+names(cor)[names(cor) == "cor"] <- "Total.sales"
+cor$log_ts = data$log.sales
+cor$USD = data$USD
+cor$ec_ex = data$Ec.sit.ex
+cor$prob_buy = data$Prob.buy.home
+cor$IntRate = data$Int.rate
+#visualizing correlations
+ggpairs(cor)
+```
+
+The correlation between independent variables and total sales is compared to the correlation between independent variables and logarithm of total sales. As we mentioned earlier, it would be wise to go with the logarithm version to generate a better prediction.
+
+# Forecasting Model
+
+
+```{r echo = FALSE, include = TRUE}
+cor=data.table(cor)
+fm = lm( log_ts ~ USD + IntRate + prob_buy + ec_ex, cor)
+summary(fm)
+checkresiduals(fm)
+```
+
+```{r echo = FALSE, include = TRUE}
+predic = cor
+predic[,fitted:=fitted(fm)]
+predic[,residual:=residuals(fm)]
+predic %>%
+  ggplot(aes(x=fitted, y=residual)) + 
+  geom_point(color="purple") +
+  labs(title="Residuals for each Fitted Value", x="Fitted",y="Residuals")+
+  geom_abline(slope=0, intercept=0)
+```
+```{r echo = FALSE, include = TRUE}
+predic %>%
+  ggplot(aes(x=fitted, y=log_ts)) + 
+  geom_point(color="darkblue") +
+  labs(title="Actual vs Fitted Values", x="Fitted",y="Actual")+
+  geom_abline(slope=1, intercept=0)
+```
+
+
+# Plotting the Forecast Model
+
+After applying the forecast formula for previous months, the forecast data for previous months is added. Then, the forecast and actual values are plotted to visualize.
+
+```{r echo=FALSE, include=TRUE}
+cor$Date = data$Date[1:87]
+predic$Date = cor$Date
+predic[,Trend:=exp(fitted)]
+ggplot(predic ,aes(x=Date)) + 
+  geom_line(aes(x = Date, y = fitted, color = "Trend"), size=1) +
+  geom_line(aes(x = Date, y = log_ts, color = "Actual"), size=1) +
+  labs(title = "Trend vs Actual", x = "Time", y = "Total Sales", color=" ") +
+  theme_minimal() +
+  scale_color_manual(values=c("darkred", "darkblue"))
+```
+
+```{r echo=FALSE, include=TRUE}
+predic=rbind(predic,data.table(Date=ymd("2021-04-01")),fill=T) 
+predic[is.na(ec_ex)==T,ec_ex:= data[87,3]]
+predic[is.na(USD)==T,USD:= data[87,5]]
+predic[is.na(IntRate)==T,IntRate:= data[87,6]]
+predic[is.na(prob_buy)==T,prob_buy:= data[87,2]]
+predic[is.na(Trend)==T,Trend:= 87]
+expected = predict(fm, predic[is.na(fitted)==T])
+pred4.21 = exp(expected)
+predic[is.na(Total.sales)==T,Total.sales:= pred4.21]
+predic[is.na(log_ts)==T,log_ts:= expected]
+```
+
+```{r}
+pred4.21
+
+```
+# Conclusion
+
+In this project, the total home sales data were taken from the EVDS website. In this research, we tried to estimate the total home sales data to be made next month, using home sales data from 2014 to March 2021. In addition to these data, we used independent values ​​related to home sales, such as exchange rate and interest rates.In addition, "What is the probability of buying a house in Turkey in the next 12 months?" and "What is the expectation of the general economic situation in Turkey in the next 12 months?" We tried to improve the result by taking into account the answers of such survey questions.As a result of these, we got a result.
+
