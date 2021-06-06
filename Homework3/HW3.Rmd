@@ -1,0 +1,275 @@
+---
+title: "HW3"
+author: "YUNUS EMRE TOPRAK"
+date: "06 06 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Introduction
+
+```{r warning=FALSE, message=FALSE}
+library(data.table)
+library(ggplot2)
+library(lubridate)
+library(urca)
+library(forecast)
+```
+
+In this project, we will create a model that predicts hourly electricity consumption in Turkey. In this study, we will apply autoregressive(AR) and moving average(MA) models.After deciding to build a model with proper coefficient in ARIMA models with respect to AIC values, we will forecast for 14 days period and analyze our forecast with different performance measures. As a first step, we will get our data as csv file from the [EPIAS](https://seffaflik.epias.com.tr/transparency/tuketim/gerceklesen-tuketim/gercek-zamanli-tuketim.xhtml) website, then we will edit the data types in our csv file.
+```{r warning=FALSE,message=FALSE}
+consumption = read.csv(file="RTC.csv")
+consumption=as.data.table(consumption)
+setnames(consumption, "Consumption..MWh.", "Consum")
+consumption$Consum=gsub("\\.", "", (consumption$Consum))
+consumption$Consum=gsub("\\,", ".", (consumption$Consum))
+consumption$Consum=as.numeric(consumption$Consum)
+consumption$Date=as.Date(consumption$Date, format="%d.%m.%Y")
+consumption$DateTime = paste(consumption$Date,consumption$Hour)
+consumption$DateTime = as_datetime(consumption$DateTime, format="%Y-%m-%d %H:%M")
+summary(consumption)
+```
+# Visualizing the Data
+
+```{r warning=FALSE,message=FALSE}
+(ggplot(data=consumption, aes(x=DateTime,y=Consum))+geom_line()+
+   labs(x="Date",y="Consumption",title="Hourly Consumption")+
+   theme_minimal(base_size = 16)
+)
+```
+
+When we examine the hourly consumption, we can see that it is monthly seasonality. It is seen that the highest electricity consumption is in the summer months. When we look at the winter months, we can see that the consumption is quite high. However, this consumption remains below the summer months. When we come to the beginning of 2020, we can see that there has been a sudden decrease in electricity consumption. It can be thought that this event has a connection with the current COVID-19 disease. Afterwards, it is observed that there is an increase in electricity consumption compared to previous years. This may be due to the fact that things are done a little more online in our country.
+
+Let's narrow down our data a little more to understand better.
+
+```{r warning=FALSE,message=FALSE}
+(ggplot(data=consumption[consumption$Date>="2018-01-01"&consumption$Date<="2020-01-01"], aes(x=DateTime,y=Consum))+geom_line()
+  +labs(x="Date",y="Consumption",title="Hourly Consumption for 2 Years ")
+  +theme_minimal(base_size=16)
+)
+
+```
+
+Yearly seasonality is observed more clearly.
+
+```{r message=FALSE,warning=FALSE}
+(ggplot(data=consumption[consumption$Date>="2017-02-01"&consumption$Date<="2018-02-01"], aes(x=DateTime,y=Consum))+geom_line()
+  +labs(x="Date",y="Consumption",title="Hourly Consumption for 1 Year")
+  +theme_minimal(base_size=16)
+)
+
+```
+
+To observe monthly seasonality we have the plot for a year where the effect of each month is observable.
+```{r message=FALSE, warning=FALSE}
+(ggplot(data=consumption[consumption$Date>="2018-05-01"&consumption$Date<="2018-06-01"], aes(x=DateTime,y=Consum))+geom_line()
+  +labs(x="Date",y="Consumption",title="Hourly Consumption for 1 Month")
+  +theme_minimal(base_size=16))
+```
+
+To observe weekly seasonality we have the plot for a month where the effect of each week day is observable.
+
+```{r warning=FALSE,message=FALSE}
+(ggplot(data=consumption[consumption$Date>="2018-05-01"&consumption$Date<="2018-05-04"], aes(x=DateTime,y=Consum))+geom_line()
+  +labs(x="Date",y="Consumption",title="Hourly Consumption for 4 Days ")
+  +theme_minimal(base_size=14))
+
+```
+
+Finally, there is the consumption plot for 4 days. Where the hourly patterns are clearly visible. Four types of seasonality, which are daily, weekly, monthly and yearly are observed.
+
+# Decomposition 
+
+```{r message=FALSE, warning=FALSE}
+consum_daily=ts(consumption$Consum,frequency = 24)
+daily_decompose=decompose(consum_daily)
+plot(daily_decompose)
+
+```
+
+When we examine the daily data, the trend party has seasonality. However, it is difficult to understand because every hour has an effect on seasonal components.
+```{r message=FALSE,warning=FALSE}
+consum_weekly=ts(consumption$Consum,frequency = 24*7)
+weekly_decompose=decompose(consum_weekly)
+plot(weekly_decompose)
+```
+
+When we look at it on a weekly basis, trend components have seasonality. Seasonality is more distinguishable than daily data.
+```{r warning=FALSE,message=FALSE}
+consum_monthly=ts(consumption$Consum,frequency = 24*30)
+monthly_decompose=decompose(consum_monthly)
+plot(monthly_decompose)
+```
+
+When we examine the monthly data, the trend party has seasonality. However, it is difficult to understand the seasonality components.
+
+```{r message=FALSE,warning=FALSE}
+consum_yearly=ts(consumption$Consum,frequency = 24*360)
+yearly_decompose=decompose(consum_yearly)
+plot(yearly_decompose)
+```
+
+In this plot there is the seasonality is tried to be explained yearly. Trend component does not have a seasonality anymore.
+
+
+# Multiplicative and Additive Decomposition
+## Multiplicative Decomposition (with frequency = 24*7)
+
+
+```{r warning=FALSE, message=FALSE}
+consum_ts=ts(consumption$Consum,frequency = 24*7)
+consum_ts_decomp=decompose(consum_ts,type="multiplicative")
+plot(consum_ts_decomp)
+```
+
+## Additive Decomposition (with frequency = 24*7)
+
+```{r message=FALSE,warning=FALSE}
+consum_ts=ts(consumption$Consum,frequency = 24*7)
+consum_ts_decomp=decompose(consum_ts,type="additive")
+plot(consum_ts_decomp)
+
+```
+
+```{r warning=FALSE, echo=FALSE}
+consumption$additive_trend=consum_ts_decomp$trend
+consumption$additive_seasonal=consum_ts_decomp$seasonal
+```
+
+
+### Comparison of Multiplicative and Additive Decomposition
+
+Both two types of decomposition model trend have some seasonality. Random component has a non-zero mean in multiplicative decomposition but has a zero mean in additive decomposition. Additive decomposition will be used as it has a mean of 0.
+
+# AR Model
+
+```{r message=FALSE,warning=FALSE}
+consumption$random=consum_ts_decomp$random
+(ggplot(data=consumption, aes(x=DateTime,y=random))+geom_line()
+  +labs(x="Date",y="Consumption",title="Random Component")
+  +theme_minimal(base_size=16)
+)
+```
+
+first we will apply kpss test and we will check if it is stationary or not.
+
+```{r}
+test1=ur.kpss(consumption$random) 
+summary(test1)
+```
+
+Since the test-statistic 0.0042 is smaller than even 10pct (0.347) random component is stationary.
+
+## ACF and PACF functions
+
+```{r}
+acf(consumption[complete.cases(consumption)]$random)
+```
+```{r}
+pacf(consumption[complete.cases(consumption)]$random)
+```
+
+Both suggest that ARIMA(p,d,0) should be used.
+
+Different values for p;
+```{r}
+p=list()
+for(i in 0:5){
+    p[i] = AIC(arima(consumption$random, order=c(i,0,0)))
+}
+print(p)
+```
+
+The best AIC value belongs to the model ARIMA(3,0,0)
+
+# MA Model
+
+```{r}
+q=list()
+for(i in 0:5){
+  q[i] = AIC(arima(consumption$random, order=c(0,0,i)))
+}
+print(q)
+```
+
+The smallest AIC value belongs to ARIMA(0,0,5)
+
+```{r}
+arima(consumption$random, order=c(3,0,0))
+arima(consumption$random, order=c(0,0,5))
+```
+
+ARIMA(3,0,0) performed better than ARIMA(0,0,5).
+
+# Arima Model
+
+```{r}
+arima(consumption$random, order=c(3,0,5))
+```
+
+
+Let’s try different values for parameters
+
+```{r warning=FALSE, echo=FALSE}
+print("ARIMA(2,0,5)")
+
+print(AIC(arima(consumption$random, order=c(2,0,5))))
+```
+```{r warning=FALSE, echo=FALSE}
+print("ARIMA(1,0,5)")
+
+print(AIC(arima(consumption$random, order=c(1,0,5))))
+```
+
+```{r warning=FALSE, echo=FALSE}
+print("ARIMA(3,0,6)")
+
+print(AIC(arima(consumption$random, order=c(3,0,6))))
+```
+
+
+ARIMA(2,0,5) has the best AIC value.
+
+```{r warning=FALSE}
+sett=ts(consumption[DateTime<"2021-05-06"]$random)
+model=arima(sett, order=c(2,0,5))
+
+tsset=consumption[DateTime>"2021-05-06",]
+
+
+forecasted=forecast(model,h=362)
+
+
+str(tsset)
+```
+
+```{r warning=FALSE}
+tsset$forecasts=forecasted$mean
+tsset[,prediction:=forecasts+as.numeric(additive_trend)+as.numeric(additive_seasonal)]
+
+(ggplot(data=tsset, aes(x=DateTime, y=Consum))
+  +geom_line(aes(color="consumption"))
+  +geom_line(aes(y=prediction,color="prediction"))
+  +labs(x="Date",y="Consumption",title="Forecasts vs Actual")
+  +theme_minimal(base_size=16))
+```
+
+```{r message=FALSE, warning=FALSE}
+tsset[,error:=abs(Consum-prediction)]
+tsset[,perc_error:=error/Consum]
+tsset[,mean_byday:=mean(perc_error),by=Date]
+
+days=(unique(tsset$Date))
+errors=tsset[,mean(mean_byday),by=Date]
+print(cbind(days,errors))
+
+```
+
+
+# Conclusion
+
+In this study, we created a forecast model based on the weekly energy consumption data with the help of the arima model. Average errors range from 3% to 20%, meaning that some parts are well modeled, but some changes in the data cannot be modeled this way.
+
+

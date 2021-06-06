@@ -11,3 +11,7 @@
 ## Homework 2
 
 [Homework 2](https://bu-ie-360.github.io/spring21-yunusemretoprak/Homework2/Hw2.html)
+
+## Homework 3
+
+[Homework 3](https://bu-ie-360.github.io/spring21-yunusemretoprak/Homework3/HW3.html)
