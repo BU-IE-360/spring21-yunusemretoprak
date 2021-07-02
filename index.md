@@ -15,3 +15,7 @@
 ## Homework 3
 
 [Homework 3](https://bu-ie-360.github.io/spring21-yunusemretoprak/Homework3/HW3.html)
+
+## Project
+
+[Project](https://bu-ie-360.github.io/spring21-yunusemretoprak/Project/IE360_Proje.html)
