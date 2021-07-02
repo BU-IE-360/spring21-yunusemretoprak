@@ -1,9 +1,9 @@
 
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 ## Introduction
 
 Statistical and time series analysis mainly focus on conspicuous trend and seasonality with distinct variables. E-commerce has become so popular since the Internet has become so accessible for the last two decades. Trendyol is a platform which enable customers and sellers to link with. We, as 15th group, predicted 15 days of sales of 9 different goods in that platform for that project. We are provided required data for the prediction and used sales of previous days. Therefore, we have made two-day ahead predictions. Previous sales beginning from May 2020 are included that the data contains the price, products sold, the number of click on a product, how many times a product is made favorite and added to basket, the number of items that have the same brand and that are sold in the same category and the number of visiting this category. This information was available for every single product and day. In textile, cosmetics and electronics categories had 4, 3, 2 products, respectively. The primary elements for achieving this project are to assess historical data, patience to track and change the forecast method, the expertise of general modelling, group cooperation and achievement choosing and defining the characteristics to be used. Our group figured out how the essential patterns are impacted by the amount of past sales by evaluating the data visually and using regression plots and basic plot commands. We decided to assess each product separately since different patterns can be seen in certain categories. As a result, we explained the way that we used and programming processes we go through in every step as we figured out key patterns in the sales of goods. First, such categories are sorted according to ID numbers and nine sections of categories are made. Then, one date was produced for validation and a second date for trying the prediction model, which these dates were separated each data of product category.
