@@ -20,13 +20,14 @@ library(forecast)
 
 In this project, we will create a model that predicts hourly electricity consumption in Turkey. In this study, we will apply autoregressive(AR) and moving average(MA) models.After deciding to build a model with proper coefficient in ARIMA models with respect to AIC values, we will forecast for 14 days period and analyze our forecast with different performance measures. As a first step, we will get our data as csv file from the [EPIAS](https://seffaflik.epias.com.tr/transparency/tuketim/gerceklesen-tuketim/gercek-zamanli-tuketim.xhtml) website, then we will edit the data types in our csv file.
 ```{r warning=FALSE,message=FALSE}
-consumption = read.csv(file="RTC.csv")
+consumption1 = read.csv(file="RTC.csv")
 consumption=as.data.table(consumption)
 setnames(consumption, "Consumption..MWh.", "Consum")
 consumption$Consum=gsub("\\.", "", (consumption$Consum))
 consumption$Consum=gsub("\\,", ".", (consumption$Consum))
 consumption$Consum=as.numeric(consumption$Consum)
 consumption$Date=as.Date(consumption$Date, format="%d.%m.%Y")
+consumption$DateTime = paste(consumption$Date,consumption$Hour)
 consumption$DateTime = paste(consumption$Date,consumption$Hour)
 consumption$DateTime = as_datetime(consumption$DateTime, format="%Y-%m-%d %H:%M")
 summary(consumption)
