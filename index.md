@@ -18,7 +18,7 @@
 
 ## Homework 4&5
 
-[Homework 4&5](https://bu-ie-360.github.io/spring21-yunusemretoprak/Homework4&5/HW4-5.html)
+[Homework 4&5](https://bu-ie-360.github.io/spring21-yunusemretoprak/Homework4/Hw-4-5.html)
 
 ## Project
 
